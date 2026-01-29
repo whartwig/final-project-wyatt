@@ -1,0 +1,142 @@
+---
+title: "Data Cleaning File"
+author: "Wyatt Hartwig"
+date: "XX XXX XXXX"
+format: 
+  pdf:
+    include-in-header: 
+       text: |
+         \usepackage{fvextra}
+         \DefineVerbatimEnvironment{Highlighting}{Verbatim}{breaklines,commandchars=\\\{\}}
+include-before-body:
+  text: |
+    \RecustomVerbatimEnvironment{verbatim}{Verbatim}{
+      showspaces = false,
+      showtabs = false,
+      breaksymbolleft={},
+      breaklines
+    }
+output:
+  echo: false
+  eval: false
+---
+
+```{python}
+from itertools import count
+from math import nan
+import openpyxl
+import pandas as pd
+import matplotlib.pyplot as plt
+import os
+import pip
+import seaborn as sns
+import geopandas as gpd
+import json
+import pyproj
+from pyproj import CRS
+from pyproj import Proj
+from shapely import Point, LineString, Polygon
+from shapely.geometry import linestring
+import numpy as np
+import folium as fol
+from folium.plugins import MarkerCluster
+#os.getcwd()
+orig_data = 'C:\\Users\\wyatt\\student30538-w26\\final-project-whartwig\\Original-Data\\'
+data_drop = 'C:\\Users\\wyatt\\student30538-w26\\final-project-whartwig\\Cleaned-Data\\'
+```
+
+
+The below code will take the .shp and its dependencies to convert to a more usable .geojson file type. 
+```{python}
+o_data = gpd.read_file(orig_data+'census_tracts.shp')
+stl_tracts = o_data[(o_data['NAMELSADCO']=='St. Louis County') | (o_data['NAMELSADCO']=='St. Louis city')]
+stl_tracts = gpd.GeoDataFrame(stl_tracts).set_crs('EPSG:4326')
+stl_tracts.to_file(data_drop+'stl_tracts.geojson', driver='GeoJSON')
+```
+
+Below, I am processing the converted files and preparing them for later merging. The last line takes the city and county demogrpahics, concatinating into one dataset for easier manipulation.
+```{python}
+stl_tracts = gpd.read_file('stl_tracts.geojson')
+stl_tracts = gpd.GeoDataFrame(stl_tracts[['COUNTYFP', 'NAME', 'NAMELSADCO', 'ALAND',
+                                          'AWATER', 'geometry']])
+
+stl_city_tracts_demo = pd.read_csv('census_tract_demos.csv').iloc[[0]]
+stl_city_tracts_demo = stl_city_tracts_demo.T
+stl_city_tracts_demo = stl_city_tracts_demo.reset_index()
+stl_city_tracts_demo.rename({0:'POPULATION', 'index':'NAME'}, axis=1, inplace=True)
+stl_city_tracts_demo.drop(0, inplace=True)
+stl_city_tracts_demo['NAME'] = stl_city_tracts_demo['NAME'].str.extract(r'(\d+\.?\d*)')
+stl_city_tracts_demo
+
+stlcounty_tracts_demo = pd.read_csv('stlcounty_tracts.csv').iloc[[0]]
+stlcounty_tracts_demo = stlcounty_tracts_demo.T
+stlcounty_tracts_demo = stlcounty_tracts_demo.reset_index()
+stlcounty_tracts_demo.rename({0:'POPULATION', 'index':'NAME'}, axis=1, inplace=True)
+stlcounty_tracts_demo.drop(0, inplace=True)
+stlcounty_tracts_demo['NAME'] = stlcounty_tracts_demo['NAME'].str.extract(r'(\d+\.?\d*)')
+stlcounty_tracts_demo
+
+stl_tracts_pop = pd.concat([stlcounty_tracts_demo, stl_city_tracts_demo], ignore_index=True)
+```
+
+Here I am taking the combined demo data and merging it with the geographic data to prepare a dataset for later mapping with GeoPandas.
+```{python}
+stl_tracts = stl_tracts.merge(stl_tracts_pop, on='NAME')
+stl_tracts.rename({'NAME':'TRACT', 'NAMELSADCO':'COUNTY'}, axis=1, inplace=True)
+stl_tracts['AREA'] = stl_tracts['ALAND'] + stl_tracts['AWATER']
+stl_tracts['SQMI'] = stl_tracts['AREA']*3.8610215854245E-7
+stl_tracts['POPULATION'] = pd.to_numeric(stl_tracts['POPULATION'].str.replace(',',''))
+stl_tracts['DENSITY'] = round(stl_tracts['POPULATION']/stl_tracts['SQMI'])
+```
+
+Here I am discerning the boundries of the proposed new city, which requires some mannual tuning for geographic considerations.
+```{python}
+#Density selection
+stl_select = stl_tracts[(stl_tracts['COUNTY']=='St. Louis city') | (stl_tracts['DENSITY']>=3600)]
+
+#Remove tracts for compactness
+non_cont_tracts = ['2215.06', '2179.44', '2179.23', '2179.31', '2179.42', '2181.05', '2214.25',
+                   '2180.16', '2115.45', '2115.46', '2150.05', '2132.04', '2149.02', '2146.01',
+                   '2146.02', '2144', '2135', '2134.01', '2134.02', '2133.02', '2148', '2116',
+                   '2111.01', '2110.02', '2110.01', '2109.25', '2109.26', '2109.28', '2109.24',
+                   '2109.23', '2113.01', '2113.31', '2113.32', '2151.45', '2151.46', '2147',
+                   '2107.04']
+
+##Add tracts for contiguity
+add_tracts = ['2201.02','2206.01', '2206.02', '2203', '2197','2207.01', '2208.01', '2192', '2193',
+              '2213.37', '2213.37', '2204.50', '2204.42', '2186', '2219', '2189.01', '2173',
+              '2166', '2139', '2141', '2104', '2120.02', '2118.01']
+
+stl_select = stl_select[~stl_select['TRACT'].isin(non_cont_tracts)]
+stl_select = pd.concat([stl_tracts[stl_tracts['TRACT'].isin(add_tracts)], stl_select],
+                       ignore_index=True)
+```
+
+```{python}
+#Basic calculations for verification
+stl_select['POPULATION'].sum()
+stl_select['SQMI'].sum()
+stl_select['POPULATION'].sum()/stl_select['SQMI'].sum()
+```
+
+Here I dissolve the cencus tracts for visual presentation purposes, removing internal tract boarders.
+```{python}
+newstl = stl_select.copy()
+newstl['DISID'] = 1
+newstl = newstl.dissolve(by='DISID', aggfunc={'POPULATION':'sum', 'SQMI':'sum'})
+newstl['DENSITY'] = round(newstl['POPULATION']/newstl['SQMI'])
+newstl['NAME'] = 'New St. Louis'
+newstl
+
+#New County all in
+county_all = stl_tracts.copy()
+county_all['DISID'] = 1
+county_all = county_all.dissolve(by='DISID', aggfunc={'POPULATION':'sum', 'SQMI':'sum'})
+county_all['NAME'] = 'New Combined St. Louis County'
+
+#New St. Louis County (minus the new city)
+newstl_tracts = stl_select['TRACT']
+newcounty = stl_tracts[~stl_tracts['TRACT'].isin(newstl_tracts)]
+newcounty = newcounty.dissolve(by='COUNTY', aggfunc={'POPULATION':'sum', 'SQMI':'sum'})
+newcounty['NAME'] = 'St. Louis County (without STL)'
+```
