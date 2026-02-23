@@ -39,18 +39,19 @@ from shapely.geometry import linestring
 import numpy as np
 import folium as fol
 from folium.plugins import MarkerCluster
-#os.getcwd()
-orig_data = 'C:\\Users\\wyatt\\student30538-w26\\final-project-whartwig\\Original-Data\\'
-data_drop = 'C:\\Users\\wyatt\\student30538-w26\\final-project-whartwig\\Cleaned-Data\\'
+os.chdir('C:\\Users\\wyatt\\student30538-w26\\final-project-whartwig')
+current_working_dir = os.getcwd()
+path_raw_data = os.path.join(current_working_dir, 'Original-Data')
+path_cleaned_data = os.path.join(current_working_dir, 'Cleaned-Data')
 ```
 
 # Read in cleaned files
 ```{python}
-stl_tracts = gpd.read_file(data_drop + 'stl_tracts.geojson')
-stl_select = gpd.read_file(data_drop + 'stl_select.geojson')
-newstl = gpd.read_file(data_drop + 'newstl.geojson')
-newcounty = gpd.read_file(data_drop + 'newcounty.geojson')
-county_all = gpd.read_file(data_drop + 'county_all.geojson')
+stl_tracts = gpd.read_file(os.path.join(path_cleaned_data, 'stl_tracts.geojson'))
+stl_select = gpd.read_file(os.path.join(path_cleaned_data, 'stl_select.geojson'))
+newstl = gpd.read_file(os.path.join(path_cleaned_data, 'newstl.geojson'))
+newcounty = gpd.read_file(os.path.join(path_cleaned_data,'newcounty.geojson'))
+county_all = gpd.read_file(os.path.join(path_cleaned_data, 'county_all.geojson'))
 ```
 ```{python}
 #stl_tracts

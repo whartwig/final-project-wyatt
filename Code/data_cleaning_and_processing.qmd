@@ -40,27 +40,28 @@ from shapely.geometry import linestring
 import numpy as np
 import folium as fol
 from folium.plugins import MarkerCluster
-#os.getcwd()
-orig_data = 'C:\\Users\\wyatt\\student30538-w26\\final-project-whartwig\\Original-Data\\'
-data_drop = 'C:\\Users\\wyatt\\student30538-w26\\final-project-whartwig\\Cleaned-Data\\'
+os.chdir('C:\\Users\\wyatt\\student30538-w26\\final-project-whartwig')
+current_working_dir = os.getcwd()
+path_raw_data = os.path.join(current_working_dir, 'Original-Data')
+path_cleaned_data = os.path.join(current_working_dir, 'Cleaned-Data')
 ```
 
 
 The below code will take the .shp and its dependencies to convert to a more usable .geojson file type. 
 ```{python}
-o_data = gpd.read_file(orig_data+'census_tracts.shp')
+o_data = gpd.read_file(os.path.join(path_raw_data, 'census_tracts.shp'))
 stl_tracts = o_data[(o_data['NAMELSADCO']=='St. Louis County') | (o_data['NAMELSADCO']=='St. Louis city')]
 stl_tracts = gpd.GeoDataFrame(stl_tracts).set_crs('EPSG:4326')
-stl_tracts.to_file(data_drop+'stl_tracts.geojson', driver='GeoJSON')
+stl_tracts.to_file(os.path.join(path_cleaned_data, 'stl_tracts.geojson'), driver='GeoJSON')
 ```
 
 Below, I am processing the converted files and preparing them for later merging. The last line takes the city and county demogrpahics, concatinating into one dataset for easier manipulation.
 ```{python}
-stl_tracts = gpd.read_file(data_drop + 'stl_tracts.geojson')
+stl_tracts = gpd.read_file(os.path.join(path_cleaned_data, 'stl_tracts.geojson'))
 stl_tracts = gpd.GeoDataFrame(stl_tracts[['COUNTYFP', 'NAME', 'NAMELSADCO', 'ALAND',
                                           'AWATER', 'geometry']])
 
-stl_city_tracts_demo = pd.read_csv(orig_data+'census_tract_demos.csv').iloc[[0]]
+stl_city_tracts_demo = pd.read_csv(os.path.join(path_raw_data, 'census_tract_demos.csv')).iloc[[0]]
 stl_city_tracts_demo = stl_city_tracts_demo.T
 stl_city_tracts_demo = stl_city_tracts_demo.reset_index()
 stl_city_tracts_demo.rename({0:'POPULATION', 'index':'NAME'}, axis=1, inplace=True)
@@ -68,7 +69,7 @@ stl_city_tracts_demo.drop(0, inplace=True)
 stl_city_tracts_demo['NAME'] = stl_city_tracts_demo['NAME'].str.extract(r'(\d+\.?\d*)')
 stl_city_tracts_demo
 
-stlcounty_tracts_demo = pd.read_csv(orig_data+'stlcounty_tracts.csv').iloc[[0]]
+stlcounty_tracts_demo = pd.read_csv(os.path.join(path_raw_data, 'stlcounty_tracts.csv')).iloc[[0]]
 stlcounty_tracts_demo = stlcounty_tracts_demo.T
 stlcounty_tracts_demo = stlcounty_tracts_demo.reset_index()
 stlcounty_tracts_demo.rename({0:'POPULATION', 'index':'NAME'}, axis=1, inplace=True)
@@ -144,19 +145,19 @@ newcounty['NAME'] = 'St. Louis County (without STL)'
 Run code blocks to drop cleaned data into the proper project folder for use in visualizations
 ```{python}
 #All tracts map
-stl_tracts.to_file(data_drop+'stl_tracts.geojson', driver='GeoJSON')
+stl_tracts.to_file(os.path.join(path_cleaned_data, 'stl_tracts.geojson'), driver='GeoJSON')
 
 #New proposed city boundires without dissolve
-stl_select.to_file(data_drop+'stl_select.geojson', driver='GeoJSON')
+stl_select.to_file(os.path.join(path_cleaned_data, 'stl_select.geojson'), driver='GeoJSON')
 
 #New proposed city boundries with dissolve
-newstl.to_file(data_drop+'newstl.geojson', driver='GeoJSON')
+newstl.to_file(os.path.join(path_cleaned_data, 'newstl.geojson'), driver='GeoJSON')
 
 #New county boundries with dissolve (minus stl)
-newcounty.to_file(data_drop+'newcounty.geojson', driver='GeoJSON')
+newcounty.to_file(os.path.join(path_cleaned_data, 'newcounty.geojson'), driver='GeoJSON')
 
 #New county boundries with dissolve (incl stl)
-county_all.to_file(data_drop+'county_all.geojson', driver='GeoJSON')
+county_all.to_file(os.path.join(path_cleaned_data, 'county_all.geojson'), driver='GeoJSON')
 ```
 
 ```{python}
