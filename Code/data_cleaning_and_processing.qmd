@@ -28,6 +28,7 @@ import openpyxl
 import pandas as pd
 import matplotlib.pyplot as plt
 import os
+from pathlib import Path
 import pip
 import seaborn as sns
 import geopandas as gpd
@@ -40,12 +41,11 @@ from shapely.geometry import linestring
 import numpy as np
 import folium as fol
 from folium.plugins import MarkerCluster
-os.chdir('C:\\Users\\wyatt\\student30538-w26\\final-project-whartwig')
-current_working_dir = os.getcwd()
-path_raw_data = os.path.join(current_working_dir, 'Original-Data')
-path_cleaned_data = os.path.join(current_working_dir, 'Cleaned-Data')
+#os.chdir('C:\\Users\\wyatt\\student30538-w26\\final-project-whartwig')
+base_dir = Path(__file__).resolve().parent.parent
+path_raw_data = os.path.join(base_dir, 'Original-Data')
+path_cleaned_data = os.path.join(base_dir, 'Cleaned-Data')
 ```
-
 
 The below code will take the .shp and its dependencies to convert to a more usable .geojson file type. 
 ```{python}

@@ -1,12 +1,17 @@
 import geopandas as gpd
 from os.path import join
 import os
+from pathlib import Path
 import altair as alt
 import pandas as pd
 import numpy as np
 import time
 import folium as fol
 from statsmodels.stats.weightstats import DescrStatsW as dsw
+#os.chdir('C:\\Users\\wyatt\\student30538-w26\\final-project-whartwig')
+base_dir = Path(__file__).resolve().parent.parent
+path_raw_data = os.path.join(base_dir, 'Original-Data')
+path_cleaned_data = os.path.join(base_dir, 'Cleaned-Data')
 
 # improve graph resolution
 import tempfile
@@ -23,16 +28,17 @@ def display_to_pdf(altchart, scale=2):
     png_bytes = vlc.vegalite_to_png(altchart.to_dict(), scale=scale)
     display(Image(png_bytes))
 
-os.chdir('C:\\Users\\wyatt\\student30538-w26\\final-project-whartwig')
+
 ############################################################################3
 
-stl_munis = gpd.read_file(f'Original-Data\Municipal_Boundaries.geojson')
+stl_munis = gpd.read_file(os.path.join(path_raw_data,
+                                       'Municipal_Boundaries.geojson'))
 stl_munis['last_edited_date'] = stl_munis['last_edited_date'].astype(str)
 stl_munis['MUNICIPALITY'] = stl_munis['MUNICIPALITY'].str.title()
 stl_munis = stl_munis[stl_munis['MUNICIPALITY']!='Unincorporated']
 stl_munis
 
-stl_munis_demos = pd.read_csv('Original-Data\stl demographics.csv')
+stl_munis_demos = pd.read_csv(os.path.join(path_raw_data, 'stl_demographics_manual.csv'))
 stl_munis_demos['MUNICIPALITY'] = stl_munis_demos['MUNICIPALITY'].str.title()
 stl_munis_merged = stl_munis.merge(stl_munis_demos, on='MUNICIPALITY')
 
@@ -57,7 +63,7 @@ munis
 
 
 
-fisc = pd.read_csv('Original-Data/fisc_data.csv')
+fisc = pd.read_csv(os.path.join(path_raw_data, 'fisc_data.csv'))
 fisc[['state', 'city']] = fisc['city_name'].str.split(':', n=1, expand=True)
 fisc['city'] = fisc['city'].str.strip()
 fisc['state'] = fisc['state'].str.strip()
