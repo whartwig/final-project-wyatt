@@ -1,0 +1,51 @@
+1. Motivating Question: How would redefining St. Louis’s borders on density of census tract and remerging with St. Louis County affect the region?
+    Sub Questions:
+    To what extent does municipal reform in St. Louis align with the region’s innovation centers and activities?
+    What demographic differences would arise and who may be left behind?
+    How do per capita infrastructure assets change?
+    What are potential savings from municipal consolidation in a ‘new’ St. Louis County?
+
+2. Possible Datasets
+    American Community Survey 2023 - Demographic Data by Census Tract
+    IPUMS NHGIS - Income and Education by Census Tract
+    TIGER Shapefiles
+    St. Louis Regional Data Exchange
+        Transportation
+        Human and Social Services
+        Zoning
+        Budget/Finance
+        Taxes
+        Public Safety and Justice
+    Lincoln Institute - 2022 Fiscally Standardized Cities
+
+3. Ideas for Visualizations
+Current and New Boundaries: 
+    This is the starting point for the central idea of municipal consolidation. To understand the current situation two maps and summary statistics on the old and new boundaries will form the base of further analysis. Additionally, all visualization will likely include a side by side or at least one analysis under current and then the new proposed borders.
+Municipal Comparison: 
+    This chart will focus on the principal statistics regarding population and per capita spending on municipal services in St. Louis County compared to other peer cities suburbs. Peer cities will be defined by size, growth patterns, history, and geographic similarity.
+Critical Infrastructure Overlay:
+    This map will show the interconnection of items such as transit stops and centers. It will also include fire stations, police stations, department of transportation assets. This map might be toggleable to switch between these items then fire districts and policing zones (it will be complex looking due to current duplication of services and the overlay may not be possible all in one map).
+Economic Cluster Overlay:
+    This map will illustrate the current and proposed degree to which a redefined city would align with core economic strength centers of the St. Louis region. St. Louis’s clusters are AgTech & Plant Science, Logistics, and Medicine. This overlay may include a toggle for future cluster zones, principally in advanced manufacturing and/or geospatial technologies.
+Municipal Finance Interaction:
+    This will be an interactive table showing the relationships between different types of municiap aspects for the 93 (plus the county) municipaliities in the region to understand existing costs. Potentially using Louisville as a comparison.
+
+
+
+Other Outlines: 
+Desired Columns for census tract-level dataset:
+    1. Total Population
+    2. Median HHI
+    3. Median HHI White
+    4. Median HHI Black
+    5. Median HHI All Other Races
+    6. Proportion Highest Level of Education column name: 'Less than High School'
+    7. Proportion Highest Level of Education column name: 'High School'
+    8. Proportion Highest Level of Education column name: 'Some College'
+    8. Proportion Highest Level of Education column name: 'Associate's Degree'
+    9. Proportion Highest Level of Education column name: 'Bachelor's Degree'
+    10. Proportion Highest Level of Education column name: 'Master's Degree or Higher'
+    11. Proportion White
+    12. Proportion Black
+    13. Proportion All Other Races
+    14. Home Ownership Rate

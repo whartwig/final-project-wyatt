@@ -10,8 +10,8 @@ import folium as fol
 from statsmodels.stats.weightstats import DescrStatsW as dsw
 #os.chdir('C:\\Users\\wyatt\\student30538-w26\\final-project-whartwig')
 base_dir = Path(__file__).resolve().parent.parent
-path_raw_data = os.path.join(base_dir, 'Original-Data')
-path_cleaned_data = os.path.join(base_dir, 'Cleaned-Data')
+path_raw_data = os.path.join(base_dir, 'data', 'raw-data')
+path_cleaned_data = os.path.join(base_dir, 'data', 'derived-data')
 
 # improve graph resolution
 import tempfile
@@ -114,3 +114,18 @@ plot_debt(fisc[fisc['city'].isin(fisc[fisc['consolidated_govt']==1]['city'].uniq
 
 
 
+
+
+
+
+stl_tracts = gpd.read_file(os.path.join(path_cleaned_data, 'all_tracts.geojson'))
+stl_select = gpd.read_file(os.path.join(path_cleaned_data, 'newstl_tracts.geojson'))
+newstl = gpd.read_file(os.path.join(path_cleaned_data, 'newstl_dis.geojson'))
+newcounty = gpd.read_file(os.path.join(path_cleaned_data,'county_minus_newstl.geojson'))
+county_all = gpd.read_file(os.path.join(path_cleaned_data, 'county_plus_newstl.geojson'))
+
+m = fol.Map(location = [38.625029, -90.186772], tiles='cartodb positron', zoom_start = 10)
+fol.GeoJson(county_all,
+            style_function=lambda x: {'fillColor':'blue', 'color':'black', 'weight': 1,
+                                      'fillOpacity': 0.1,}).add_to(m)
+m
