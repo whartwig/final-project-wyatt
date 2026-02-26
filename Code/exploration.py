@@ -129,3 +129,7 @@ fol.GeoJson(county_all,
             style_function=lambda x: {'fillColor':'blue', 'color':'black', 'weight': 1,
                                       'fillOpacity': 0.1,}).add_to(m)
 m
+
+
+
+

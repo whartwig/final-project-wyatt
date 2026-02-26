@@ -49,3 +49,43 @@ Desired Columns for census tract-level dataset:
     12. Proportion Black
     13. Proportion All Other Races
     14. Home Ownership Rate
+
+
+
+
+✦ The outline provided in project_overview_questions.txt is highly feasible to implement, as much of the foundational data work and core analysis have already been completed.
+
+  Current Progress vs. Proposed Outline
+
+
+   1. Motivating Question & Redefining Borders:
+       * Status: Implemented. data_cleaning_and_processing.py already defines the "New St. Louis" boundaries based on a density threshold (>= 3,600 people/sq mi) and manual adjustments 
+         for contiguity.
+       * Demographics: Implemented. The script pulls ACS 2023 data (HHI, Race, Education, Home Ownership) and joins it with census tracts, allowing for immediate side-by-side comparison
+         of old vs. new borders.
+
+
+   2. Innovation Centers & Economic Clusters:
+       * Status: Highly Feasible. You have stl_innovation_geo.csv containing coordinates for Start-Up Spaces, Innovation Districts (Cortex, 39 North), and Universities.
+       * Next Step: Overlay these points onto the "New St. Louis" GeoJSON to see how well the new borders capture these economic drivers.
+
+
+   3. Critical Infrastructure Overlay:
+       * Status: Highly Feasible. Your raw-data folder already contains GeoJSONs for:
+           * Transit: routes_bus, routes_metro, stations_bus, stations_metro.
+           * Public Safety: police.geojson, stl_firestat.geojson, stlc_firedist.geojson.
+       * Next Step: Combine these layers in a Folium map (as hinted at in exploration.py) to visualize service density and potential duplication.
+
+
+   4. Municipal Comparison & Finance:
+       * Status: Partially Implemented.
+           * generate_muni_csv.py has already created a governance dataset (muni_governance_merged.csv) with population and payroll costs for 90+ municipalities.
+           * exploration.py includes a FISC (Fiscally Standardized Cities) debt comparison with peer cities like Kansas City, Nashville, and Columbus.
+       * Next Step: Use the per-capita administrative costs in your governance CSV to model potential savings from consolidation (e.g., "What if the 93 municipalities shared a single   
+         administrative structure?").
+
+
+  Immediate Next Steps to Complete the Vision
+   * Refine the "Innovation" Map: Plot the assets from stl_innovation_geo.csv using Folium markers.
+   * Infrastructure Analysis: Calculate the count of transit stations and fire stations per capita for the "Old City" vs. "New City."
+   * Louisville Comparison: If you wish to use Louisville as a model for consolidation, you would need to add its FISC data to your debt/finance plots in exploration.py.

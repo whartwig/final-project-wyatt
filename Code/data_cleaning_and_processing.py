@@ -1,11 +1,8 @@
 from itertools import count
 from math import nan
-import openpyxl
 import pandas as pd
-import matplotlib.pyplot as plt
 import os
 from pathlib import Path
-import seaborn as sns
 import geopandas as gpd
 import json
 from census import Census
@@ -119,8 +116,8 @@ final_df = final_df.replace(census_nulls, np.nan)
 
 final_df['NAME'] = final_df['NAME'].str.extract(r'Census Tract ([\d\.]+)')
 
-# Export to CSV
-final_df.to_csv(os.path.join(path_raw_data, 'clean_census_tracts.csv'), index=False)
+# Export to CSV if you would like
+#final_df.to_csv(os.path.join(path_raw_data, 'clean_census_tracts.csv'), index=False)
 
 
 
@@ -190,6 +187,149 @@ newcounty['NAME'] = 'St. Louis County (without STL)'
 
 
 
+# --- Municipality level data ---
+
+stl_munis = gpd.read_file(os.path.join(path_raw_data,
+                                       'Municipal_Boundaries.geojson'))
+stl_munis['last_edited_date'] = stl_munis['last_edited_date'].astype(str)
+stl_munis['MUNICIPALITY'] = stl_munis['MUNICIPALITY'].str.title()
+stl_munis.rename(columns={'MUNICIPALITY': 'Municipality'}, inplace=True)
+stl_munis = stl_munis[stl_munis['Municipality']!='Unincorporated']
+
+muni_fin = pd.read_csv(os.path.join(path_raw_data,'muni_finances_merged.csv'))
+muni_fin.drop(columns='Population', inplace=True)
+muni_gov = pd.read_csv(os.path.join(path_raw_data,'muni_governance_merged.csv'))
+muni_data = muni_fin.merge(muni_gov, on='Municipality')
+muni_data['Municipality'].replace(['Saint Ann', 'Saint John'], ['St Ann', 'St John'],
+                                  inplace=True)
+
+munis_merged = stl_munis.merge(muni_data, on='Municipality', how='right')
+munis_merged[munis_merged['geometry']==None]
+
+# Manually add the missing geometry
+current_city_geom = stl_tracts[stl_tracts['COUNTY'] == 'St. Louis city'].dissolve().geometry.iloc[0]
+current_county_geom = stl_tracts[stl_tracts['COUNTY'] == 'St. Louis County'].dissolve().geometry.iloc[0]
+
+# Calculate incorporated union to find unincorporated area
+incorporated_union = stl_munis.unary_union
+unincorporated_geom = current_county_geom.difference(incorporated_union)
+
+munis_merged.loc[munis_merged['Municipality'] == 'STL County', 'geometry'] = unincorporated_geom
+munis_merged.loc[munis_merged['Municipality'] == 'Saint Louis City', 'geometry'] = current_city_geom
+munis_merged.drop(columns='last_edited_date', inplace=True)
+
+# Ensure it's a GeoDataFrame before renaming/saving
+munis_merged = gpd.GeoDataFrame(munis_merged, crs='EPSG:4326')
+
+# Rename columns for human readability
+rename_dict = {
+    'Year_Inc': 'Year Incorporated',
+    'Total_Rev': 'Total Revenue',
+    'Sales_Tax_Rev': 'Sales Tax Revenue',
+    'Property_Tax_Rev': 'Property Tax Revenue',
+    'Utility_Tax_Rev': 'Utility Tax Revenue',
+    'Court_Fines_Rev': 'Court Fines Revenue',
+    'Total_Exp': 'Total Expenditures',
+    'Top_Exp_Type': 'Top Expenditure Type',
+    'Median_HH_Inc': 'Median Household Income',
+    'Poverty_Rate': 'Poverty Rate',
+    'HS_Grad_Rate': 'HS Graduation Rate',
+    'Median_House_Value': 'Median House Value',
+    'Housing_Units': 'Housing Units',
+    'Percent_White': 'Percent White',
+    'Percent_Black': 'Percent Black',
+    'Percent_Asian': 'Percent Asian',
+    'Percent_Hispanic': 'Percent Hispanic',
+    'Total_Elected_Officials': 'Total Elected Officials',
+    'Aldermen_Count': 'Aldermen Count',
+    'Total_Aldermen_Pay': 'Total Aldermen Pay',
+    'Mayor_Pay': 'Mayor Pay',
+    'Admin_Position': 'Admin Position',
+    'Admin_Pay': 'Admin Pay',
+    'Sum_Total_Payroll': 'Sum Total Payroll',
+    'Per_Capita_Admin_Cost': 'Per Capita Admin Cost'
+}
+munis_merged.rename(columns=rename_dict, inplace=True)
+
+munis_merged['Year Incorporated'] = np.where(munis_merged['Municipality']=='STL County', 1812, munis_merged['Year Incorporated'])
+munis_merged['Year Incorporated'] = np.where(munis_merged['Municipality']=='Green Park', 1995, munis_merged['Year Incorporated'])
+
+# Craft per capita metrics
+# List of columns to calculate per capita and winsorize
+pc_cols = ['Total Revenue', 'Sales Tax Revenue', 'Property Tax Revenue', 
+           'Utility Tax Revenue', 'Court Fines Revenue', 'Total Expenditures',
+           'Total Elected Officials']
+
+# Ensure population is numeric and handle zeros to avoid division error
+munis_merged['Population'] = pd.to_numeric(munis_merged['Population'], errors='coerce')
+pop_safe = munis_merged['Population'].replace(0, np.nan)
+
+# Loop through to get new values
+for col in pc_cols:
+    # Ensure column is numeric (handle potential string/comma issues)
+    if munis_merged[col].dtype == 'object':
+        munis_merged[col] = pd.to_numeric(munis_merged[col].astype(str).str.replace(',', ''), errors='coerce')
+
+    if col == 'Total Elected Officials':
+        pc_name = 'Elected Officials Per 50,000 People'
+        wins_name = 'Elected Officials Per 50,000 People (winsorized)'
+        # Calculate Per 50,000
+        munis_merged[pc_name] = (munis_merged[col] / pop_safe) * 50000
+    else:
+        pc_name = f'{col} Per Capita'
+        wins_name = f'{col} Per Capita (winsorized)'
+        # Calculate Per Capita
+        munis_merged[pc_name] = munis_merged[col] / pop_safe
+
+    # Calculate Winsorized version 
+    upper = munis_merged[pc_name].quantile(0.90)
+    munis_merged[wins_name] = munis_merged[pc_name].clip(upper=upper)
+
+munis_merged['Per Capita Admin Cost (winsorized)'] = munis_merged['Per Capita Admin Cost'].clip(upper=munis_merged['Per Capita Admin Cost'].quantile(0.95))  
+
+
+
+# --- Transit and Public Saftey Overlay ---
+
+# Police and Fire
+police = gpd.read_file(os.path.join(path_raw_data, 'police.geojson'))
+firestat = gpd.read_file(os.path.join(path_raw_data, 'stl_firestat.geojson'))
+firedist = gpd.read_file(os.path.join(path_raw_data, 'stlc_firedist.geojson'))
+
+# Transit
+busstat = gpd.read_file(os.path.join(path_raw_data, 'stations_bus.geojson'))
+metrostat = gpd.read_file(os.path.join(path_raw_data, 'stations_metro.geojson'))
+busroute = gpd.read_file(os.path.join(path_raw_data, 'routes_bus.geojson'))
+metroroute = gpd.read_file(os.path.join(path_raw_data, 'routes_metro.geojson'))
+
+# Cleaning safety data
+police = police[['OBJECTID', 'Police_Dep', 'Precinct', 'Muni',
+                 'Address', 'geometry']]
+police.rename(columns={'Police_Dep':'Police Dept.', 'Muni': 'Municipality'},
+              inplace=True)
+firestat = firestat[['Engine', 'Address', 'Dist', 'HOUSENUM', 'geometry']]
+firestat.rename(columns={'Dist':'District', 'HOUSENUM': 'House Number'},
+                inplace=True)
+firedist = firedist[['GlobalID', 'FD_TYPE', 'FIRE_DISTRICT', 'SQ_MILES', 'geometry']]
+firedist.rename(columns={'FD_TYPE':'Type', 'FIRE_DISTRICT': 'District',
+                         'SQ_MILES':'Square Miles'}, inplace=True)
+
+# Cleaning transit data
+busstat = busstat[['OBJECTID', 'StopID', 'StopName', 'Lines', 'Routes',
+                   'CountyName', 'geometry']]
+metrostat = metrostat[['OBJECTID', 'StopID', 'StopName', 'BusCxn',
+                       'City', 'CountyName', 'geometry']]
+metrostat.rename(columns={'City':'Municipality', 'BusCxn':'Bus Connection'},
+                 inplace=True)
+busroute = busroute[['OBJECTID', 'LineName', 'LineNum', 'geometry']]
+
+# Econ data
+econ = pd.read_csv(os.path.join(path_raw_data, 'stl_innovation_geo.csv'))
+econ['geometry'] = gpd.points_from_xy(econ['long'], econ['lat'])
+econ = gpd.GeoDataFrame(econ, geometry='geometry', crs='EPSG:4326')
+
+# --- Add data to derived-data ---
+
 # Run code blocks to drop cleaned boundry data into the proper project folder for use 
 # in visualizations
 # All tracts map
@@ -207,3 +347,15 @@ newcounty.to_file(os.path.join(path_cleaned_data, 'county_minus_newstl.geojson')
 # New county boundries with dissolve (incl stl)
 county_all.to_file(os.path.join(path_cleaned_data, 'county_plus_newstl.geojson'), driver='GeoJSON')
 
+# Municipalities geo data with finance data
+munis_merged.to_file(os.path.join(path_cleaned_data, 'munis_merged.geojson'), driver='GeoJSON')
+
+# Infra.
+police.to_file(os.path.join(path_cleaned_data, 'police.geojson'), driver='GeoJSON')
+firestat.to_file(os.path.join(path_cleaned_data, 'firestat.geojson'), driver='GeoJSON')
+firedist.to_file(os.path.join(path_cleaned_data, 'firedist.geojson'), driver='GeoJSON')
+busstat.to_file(os.path.join(path_cleaned_data, 'busstat.geojson'), driver='GeoJSON')
+busroute.to_file(os.path.join(path_cleaned_data, 'busroute.geojson'), driver='GeoJSON')
+metroroute.to_file(os.path.join(path_cleaned_data, 'metroroute.geojson'), driver='GeoJSON')
+metrostat.to_file(os.path.join(path_cleaned_data, 'metrostat.geojson'), driver='GeoJSON')
+econ.to_file(os.path.join(path_cleaned_data, 'stl_econ.geojson'), driver='GeoJSON')
