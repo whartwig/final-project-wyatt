@@ -2,12 +2,63 @@
 STL = St. Louis City
 STLC = St. Louis County
 
+
+
 # Sequence of Files
 1. data_cleaning_and_processing.py
-2. 
+2. Plotting: run fisc_plot.py
+3. Streamlit: app.py
 
 
-# Data Sources
+# Steamlit Community Cloud
+Link: 
+
+# Structure
+data/
+  raw-data/           # Raw data files
+    muni_finances_merged.csv #St. Louis area municipal finances 2015
+    muni_governance_merged.csv #St. Louis area municipal gov finances 2015
+    stl_innovation_geo.csv #St. Louis area economic clusters
+    police.geojson #Police stations in St. Louis area
+    stl_firestat.geojson #St. Louis fire stations
+    stl_firedist.geojson #STL County fire districts
+    stations_bus.gejson #St. Louis area bus stations
+    station_metro.gejson #MetroLink station
+    routes_bus.geojson #Area bus routes
+    routes_metro.geojson #MetroLink tracks
+    fisc_data.csv #Linclon Institute fiscally standardized city data
+    census_tracts.dbf and census_tracts.shx #Dependances of census_tracts.shp
+    census_tracts.shp #All census tracts in the region
+    Municipal_Boundries.geojson #St. Louis area municipality borders
+  derived-data/       # Filtered data and output plots
+    stl_econ.geojson  #conversion with gpd of stl_innovation.csv
+    busroute.geojson #Filtered bus routes
+    metroroute.geojson #Filtered metro routes
+    metrostat.geojson #filtered metro stations
+    busstat.geojson #filtered bus station
+    firedis.geojson #filtered fire stations
+    firestat.geojson #filtered fire stations
+    police.geojson #filtered/cleaned police districts/stations
+    muni_merged.geojson #combined stl area municipal data and borders
+    all_tracts.geojson #all area census tracts with minor filtering
+    county_plus_newstl.geojson #combined borders for new county
+    newstl_dis.geojson #proposed st louis city borders dissolved by census tract
+    newstl_tracts.geojson #census tracts filtered to the new city 
+    stl_tracts.geojson #census tracts for filtered to the current city
+code/
+  data_cleaning_and_processing.py    # Reads in, gathers, cleans, and filters various datasets from raw-data and places them into derived-data for use
+  app.py       # stramlit dashboard code for interactive mapping
+  fisc_plot.py #plots graphs of fisc analysis for relevent cities
+  
+
+
+
+
+
+
+
+
+# Data Sourcing
 Infrastructure data: 
     MetroBus: https://data-metrostl.opendata.arcgis.com/datasets/METROSTL::currentsystem-registered/explore?layer=4&location=38.636254%2C-90.252426%2C11
     MetroLink: https://data-metrostl.opendata.arcgis.com/datasets/METROSTL::currentsystem-registered/explore?layer=3&location=38.646980%2C-90.268905%2C10

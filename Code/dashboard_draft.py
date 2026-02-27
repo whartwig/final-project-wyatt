@@ -37,7 +37,6 @@ all_tracts = load_geojson(path_cleaned_data, 'all_tracts.geojson')
 newstl_dis = load_geojson(path_cleaned_data, 'newstl_dis.geojson')
 newstl_tracts = load_geojson(path_cleaned_data, 'newstl_tracts.geojson')
 county_plus_newstl = load_geojson(path_cleaned_data, 'county_plus_newstl.geojson')
-county_minus_newstl = load_geojson(path_cleaned_data, 'county_minus_newstl.geojson')
 munis_merged = load_geojson(path_cleaned_data, 'munis_merged.geojson')
 
 @st.cache_data
@@ -171,6 +170,8 @@ if page == "Regional Density Analysis":
 
     st.info("The 'New St. Louis' boundary is defined by census tracts with a density ≥ 3,600 people/sq mi, adjusted for contiguity.")
 
+
+
 # --- 4. PAGE: MUNICIPAL COMPARISON ---
 elif page == "Municipal Comparison":
     st.title("Municipal Comparison: Financial and Demographic Insights")
@@ -252,6 +253,8 @@ elif page == "Municipal Comparison":
         st.dataframe(munis_merged[actual_display_cols].sort_values('Municipality'))
     else:
         st.error("Municipal data (munis_merged.geojson) not found. Please run the data cleaning script.")
+
+
 
 # --- 5. PAGE: CRITICAL INFRASTRUCTURE ---
 elif page == "Critical Infrastructure":
