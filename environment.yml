@@ -5,3 +5,12 @@ dependencies:
   - python=3.11
   - pandas
   - geopandas
+  - numpy
+  - os
+  - pathlib
+  - censusdata
+  - altair
+  - statsmodels
+  - streamlit
+  - folium
+  - streamlit_folium

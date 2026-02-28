@@ -14,7 +14,6 @@ st.set_page_config(layout="wide", page_title="St. Louis Municipal Consolidation 
 
 base_dir = Path(__file__).resolve().parent.parent
 path_cleaned_data = os.path.join(base_dir, 'data', 'derived-data')
-path_raw_data = os.path.join(base_dir, 'data', 'raw-data')
 
 
 # Cache data loading for performance
@@ -262,7 +261,7 @@ elif page == "Critical Infrastructure":
 
     st.sidebar.header("Infrastructure Toggles")
     show_econ = st.sidebar.checkbox("Economic Assets", value=True)
-    show_police = st.sidebar.checkbox("Police Stations", value=False)
+    show_police = st.sidebar.checkbox("Police Precincts", value=False)
     show_fire_stat = st.sidebar.checkbox("STL Fire Stations", value=False)
     show_fire_dist = st.sidebar.checkbox("County Fire Districts", value=True)
     show_metro_stations = st.sidebar.checkbox("Metro Stations", value=False)
@@ -295,16 +294,19 @@ elif page == "Critical Infrastructure":
             ).add_to(m_infra)
 
     if show_police:
-        police = load_geojson(path_raw_data, 'police.geojson')
+        police = load_geojson(path_cleaned_data, 'police.geojson')
         if police is not None:
             fol.GeoJson(police,
-                        name="Police Stations",
-                        marker=fol.Marker(icon=fol.Icon(color='blue',
-                                                        icon='shield',
-                                                        prefix='fa'))).add_to(m_infra)
+                        name="Police Precincts",
+                        style_function=lambda x: {'fillcolor':'blue', 'color':'blue', 'weight': 1, 'fillOpacity': 0.1},
+                        tooltip=fol.GeoJsonTooltip(
+                            fields=['Police Dept.', 'Precinct', 'Municipality'],
+                            aliases=['Police Dept.:', 'St. Louis Precinct:', 'City'],
+                            localize=True)
+            ).add_to(m_infra)
 
     if show_fire_stat:
-        fire_stat = load_geojson(path_raw_data, 'stl_firestat.geojson')
+        fire_stat = load_geojson(path_cleaned_data, 'firestat.geojson')
         if fire_stat is not None:
             fol.GeoJson(fire_stat, 
                         name="STL Fire Stations",
@@ -313,21 +315,26 @@ elif page == "Critical Infrastructure":
                                                         prefix='fa'))).add_to(m_infra)
 
     if show_fire_dist:
-        fire_dist = load_geojson(path_raw_data, 'stlc_firedist.geojson')
+        fire_dist = load_geojson(path_cleaned_data, 'firedist.geojson')
         if fire_dist is not None:
             fol.GeoJson(fire_dist,
                         name="County Fire Districts",
-                        style_function=lambda x: {'fillColor': 'red', 'color': 'black', 'weight': 1, 'fillOpacity': 0.1}).add_to(m_infra)
+                        style_function=lambda x: {'fillColor': 'red', 'color': 'black', 'weight': 1, 'fillOpacity': 0.1},
+                        tooltip=fol.GeoJsonTooltip(
+                            fields=['Type', 'District'],
+                            aliases=['District Type', 'City'],
+                            localize=True)
+            ).add_to(m_infra)
 
     if show_metro_routes:
-        metro_routes = load_geojson(path_raw_data, 'routes_metro.geojson')
+        metro_routes = load_geojson(path_cleaned_data, 'metroroute.geojson')
         if metro_routes is not None:
             fol.GeoJson(metro_routes,
                         name="Metro Routes",
                         style_function=lambda x: {'color': '#007bff', 'weight': 4}).add_to(m_infra)
 
     if show_metro_stations:
-        metro_stations = load_geojson(path_raw_data, 'stations_metro.geojson')
+        metro_stations = load_geojson(path_cleaned_data, 'metrostat.geojson')
         if metro_stations is not None:
             fol.GeoJson(metro_stations,
                         name="Metro Stations",
@@ -338,14 +345,14 @@ elif page == "Critical Infrastructure":
                                                 fill_opacity=1)).add_to(m_infra)
 
     if show_bus_routes:
-        bus_routes = load_geojson(path_raw_data, 'routes_bus.geojson')
+        bus_routes = load_geojson(path_cleaned_data, 'busroute.geojson')
         if bus_routes is not None:
             fol.GeoJson(bus_routes,
                         name="Bus Routes",
                         style_function=lambda x: {'color': '#28a745', 'weight': 2, 'opacity': 0.5}).add_to(m_infra)
 
     if show_bus_stations:
-        bus_stations = load_geojson(path_raw_data, 'stations_bus.geojson')
+        bus_stations = load_geojson(path_cleaned_data, 'busstat.geojson')
         if bus_stations is not None:
             # For bus stations, we use CircleMarkers due to high volume
             for idx, row in bus_stations.iterrows():

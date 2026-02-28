@@ -1,20 +1,11 @@
-from itertools import count
-from math import nan
+# --- 0. PACKAGES AND SETUP ---
 import pandas as pd
+import numpy as np
 import os
 from pathlib import Path
 import geopandas as gpd
-import json
-from census import Census
-import pyproj
-from pyproj import CRS
-from pyproj import Proj
-from shapely import Point, LineString, Polygon
-from shapely.geometry import linestring
-import numpy as np
 import censusdata
-import folium as fol
-from folium.plugins import MarkerCluster
+from census import Census
 
 # os.chdir('C:\Users\wyatt\student30538-w26\final-project-whartwig')
 base_dir = Path(__file__).resolve().parent.parent
@@ -38,9 +29,10 @@ stl_tracts = gpd.GeoDataFrame(stl_tracts[['COUNTYFP', 'NAME', 'NAMELSADCO', 'ALA
 
 
 
-# --- Pull Census Data and Clean ---
+# --- 1. PULL CENSUS DATA AND CLEAN ---
 
-# To run this code replace the below code with your API key
+# 1. To run this code replace the below code with your API key
+my_census_api = ''
 c = Census("baa1b6b805c1bab4f4f8f32b5eb3958fb8ac3ce8")
 
 # 2. Define the exact variables we need
@@ -116,12 +108,12 @@ final_df = final_df.replace(census_nulls, np.nan)
 
 final_df['NAME'] = final_df['NAME'].str.extract(r'Census Tract ([\d\.]+)')
 
-# Export to CSV if you would like
+# Export to CSV if you would like, not required for project workflow
 #final_df.to_csv(os.path.join(path_raw_data, 'clean_census_tracts.csv'), index=False)
 
 
 
-# --- Merge Demo and Shape Data ---
+# --- 2. MERGE DEMOGRAPHIC AND SHAPE DATA ---
 
 # Here I am taking the combined demo data and merging it with the geographic data to
 # prepare a dataset for later mapping with GeoPandas.
@@ -131,8 +123,6 @@ stl_tracts.rename({'NAME':'TRACT', 'NAMELSADCO':'COUNTY'}, axis=1, inplace=True)
 stl_tracts['AREA'] = stl_tracts['ALAND'] + stl_tracts['AWATER']
 stl_tracts['SQMI'] = stl_tracts['AREA']*3.8610215854245E-7
 stl_tracts['DENSITY'] = round(stl_tracts['Total Population']/stl_tracts['SQMI'])
-
-
 
 # Here I am discerning the boundries of the proposed new city, which requires some 
 # mannual tuning for geographic considerations.
@@ -162,8 +152,6 @@ print(stl_select['Total Population'].sum())
 print(stl_select['SQMI'].sum())
 print(stl_select['Total Population'].sum()/stl_select['SQMI'].sum())
 
-
-
 # Here I dissolve the cencus tracts for visual presentation purposes, removing internal
 # tract boarders.
 newstl = stl_select.copy()
@@ -187,7 +175,7 @@ newcounty['NAME'] = 'St. Louis County (without STL)'
 
 
 
-# --- Municipality level data ---
+# --- 2a. Municipality level data ---
 
 stl_munis = gpd.read_file(os.path.join(path_raw_data,
                                        'Municipal_Boundaries.geojson'))
@@ -289,7 +277,7 @@ munis_merged['Per Capita Admin Cost (winsorized)'] = munis_merged['Per Capita Ad
 
 
 
-# --- Transit and Public Saftey Overlay ---
+# --- 3. TRANSIT AND PUBLIC SAFTEY OVERLAYS ---
 
 # Police and Fire
 police = gpd.read_file(os.path.join(path_raw_data, 'police.geojson'))
@@ -328,7 +316,9 @@ econ = pd.read_csv(os.path.join(path_raw_data, 'stl_innovation_geo.csv'))
 econ['geometry'] = gpd.points_from_xy(econ['long'], econ['lat'])
 econ = gpd.GeoDataFrame(econ, geometry='geometry', crs='EPSG:4326')
 
-# --- Add data to derived-data ---
+
+
+# --- 4. ADD PROCESSED DATA TO DERIVED DATA FOLDER ---
 
 # Run code blocks to drop cleaned boundry data into the proper project folder for use 
 # in visualizations

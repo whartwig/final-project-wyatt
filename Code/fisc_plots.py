@@ -27,7 +27,6 @@ def display_to_pdf(altchart, scale=2):
     png_bytes = vlc.vegalite_to_png(altchart.to_dict(), scale=scale)
     display(Image(png_bytes))
 
-
 def my_theme():
     font = "sans-serif"
     primary_color = "#F63366"
@@ -143,7 +142,7 @@ def my_theme():
 alt.themes.register('my_theme', my_theme)
 alt.themes.enable('my_theme')
 
-############################################################################3
+############################################################################
 
 
 
@@ -196,7 +195,7 @@ def plot_fisc_comparison(df: pd.DataFrame, columns: list, title: str):
         color=alt.Color('city:N', title='City'),
         xOffset='city:N',
         tooltip=['city', 'Metric:N', 'Value:Q']
-    ).interactive()
+    )
 
     footer = alt.Chart({'values': [{}]}).mark_text(
         align="right",
