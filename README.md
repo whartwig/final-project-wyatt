@@ -45,6 +45,7 @@ conda activate stl_analysis
   - `fisc_plots.py`: Financial analysis and visualization generation (4 plots).
 - `streamlit-app/`
   - `app.py`: Source code for the interactive Streamlit dashboard.
+  - `requierments.txt`: Requierments for streamlit to bypass .yml for efficient deployment (C errors)
 - `environment.yml`: Comprehensive Conda environment configuration.
 
 
