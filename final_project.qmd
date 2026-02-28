@@ -1,0 +1,20 @@
+---
+title: "Regional Synergies and Costs: What Would a Reconnected St. Louis City-County Look Like?"
+author: "Wyatt Hartwig"
+format:
+  pdf:
+    include-in-header:
+      text: |
+        % Enable wrapping for Pandoc code blocks in PDF
+        \usepackage{fvextra}
+        \usepackage{float}
+        \usepackage{makecell}
+        \usepackage{booktabs}
+        \DefineVerbatimEnvironment{Highlighting}{Verbatim}{breaklines,commandchars=\\\{\}}
+editor: source
+execute-dir: project
+execute:
+    echo: true
+---
+
+

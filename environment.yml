@@ -1,0 +1,7 @@
+name: stl_analysis
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - pandas
+  - geopandas

@@ -1,19 +1,19 @@
 # final-project-whartwig
-STL = St. Louis City
-STLC = St. Louis County
+This project processes and outputs data used to create municipal financial anlysis and interactive maps via streamlit community cloud with a focus on the potential reabsorbtion of St. Louis into St. Louis County
+
+streamlit community cloud: 
 
 
 
-# Sequence of Files
-1. data_cleaning_and_processing.py
-2. Plotting: run fisc_plot.py
-3. Streamlit: app.py
+## Setup
+```bash
+conda env create -f environment.yml
+conda activate stl_analysis
+```
 
 
-# Steamlit Community Cloud
-Link: 
 
-# Structure
+## Structure
 data/
   raw-data/           # Raw data files
     muni_finances_merged.csv #St. Louis area municipal finances 2015
@@ -46,19 +46,30 @@ data/
     newstl_tracts.geojson #census tracts filtered to the new city 
     stl_tracts.geojson #census tracts for filtered to the current city
 code/
-  data_cleaning_and_processing.py    # Reads in, gathers, cleans, and filters various datasets from raw-data and places them into derived-data for use
+  preprocessing.py    # Reads in, gathers, cleans, and filters various datasets from raw-data and places them into derived-data for use
+  fisc_plot.py #plots graphs of fisc analysis for relevent cities and regression results (4 plots total)
+streamlit-app/
   app.py       # stramlit dashboard code for interactive mapping
-  fisc_plot.py #plots graphs of fisc analysis for relevent cities
-  
 
 
 
+## Usage
+1. Run preprocessing to filter and create data:
+   ```bash
+   python code/preprocessing.py
+   ```
+2. Generate the four relevant static plots:
+   ```bash
+   python code/fisc_plots.py
+   ```
+3. Run the streamlit interavite dashboard:
+   ```bash
+   streamlit run streamlit-app/app.py
+   ```
 
 
 
-
-
-# Data Sourcing
+## Data Sourcing
 Infrastructure data: 
     MetroBus: https://data-metrostl.opendata.arcgis.com/datasets/METROSTL::currentsystem-registered/explore?layer=4&location=38.636254%2C-90.252426%2C11
     MetroLink: https://data-metrostl.opendata.arcgis.com/datasets/METROSTL::currentsystem-registered/explore?layer=3&location=38.646980%2C-90.268905%2C10

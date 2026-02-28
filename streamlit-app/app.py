@@ -170,8 +170,6 @@ if page == "Regional Density Analysis":
 
     st.info("The 'New St. Louis' boundary is defined by census tracts with a density ≥ 3,600 people/sq mi, adjusted for contiguity.")
 
-
-
 # --- 4. PAGE: MUNICIPAL COMPARISON ---
 elif page == "Municipal Comparison":
     st.title("Municipal Comparison: Financial and Demographic Insights")
@@ -253,8 +251,6 @@ elif page == "Municipal Comparison":
         st.dataframe(munis_merged[actual_display_cols].sort_values('Municipality'))
     else:
         st.error("Municipal data (munis_merged.geojson) not found. Please run the data cleaning script.")
-
-
 
 # --- 5. PAGE: CRITICAL INFRASTRUCTURE ---
 elif page == "Critical Infrastructure":
