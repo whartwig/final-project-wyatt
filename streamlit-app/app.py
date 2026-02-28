@@ -30,7 +30,7 @@ def load_geojson(path_dir, filename):
             gdf[col] = gdf[col].astype(str)
             
     return gdf
-
+print("✅ Imports successful! Starting data load...")
 # Load datasets
 all_tracts = load_geojson(path_cleaned_data, 'all_tracts.geojson')
 newstl_dis = load_geojson(path_cleaned_data, 'newstl_dis.geojson')
