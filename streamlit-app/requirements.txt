@@ -5,7 +5,7 @@ census
 CensusData
 altair
 statsmodels
-streamlit
+streamlit>=1.22.0
 folium
 streamlit-folium
 vl-convert-python
