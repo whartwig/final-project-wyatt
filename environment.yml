@@ -1,0 +1,23 @@
+name: stl_analysis
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - pandas
+  - geopandas
+  - numpy
+  - census
+  - censusdata
+  - altair
+  - statsmodels
+  - streamlit
+  - folium
+  - streamlit-folium
+  - vl-convert-python
+  - ipython
+  - matplotlib
+  - seaborn
+  - openpyxl
+  - pyproj
+  - shapely
+  - rtree
