@@ -32,7 +32,7 @@ stl_tracts = gpd.GeoDataFrame(stl_tracts[['COUNTYFP', 'NAME', 'NAMELSADCO', 'ALA
 
 # 1. To run this code replace the below code with your API key
 my_census_api = ''
-c = Census("baa1b6b805c1bab4f4f8f32b5eb3958fb8ac3ce8")
+c = Census(my_census_api)
 
 # 2. Define the exact variables we need
 variables = (
