@@ -7,7 +7,6 @@ import geopandas as gpd
 import censusdata
 from census import Census
 
-# os.chdir('C:\Users\wyatt\student30538-w26\final-project-whartwig')
 base_dir = Path(__file__).resolve().parent.parent
 path_raw_data = os.path.join(base_dir, 'data', 'raw-data')
 path_cleaned_data = os.path.join(base_dir, 'data', 'derived-data')

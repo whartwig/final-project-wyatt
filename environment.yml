@@ -6,11 +6,18 @@ dependencies:
   - pandas
   - geopandas
   - numpy
-  - os
-  - pathlib
+  - census
   - censusdata
   - altair
   - statsmodels
   - streamlit
   - folium
-  - streamlit_folium
+  - streamlit-folium
+  - vl-convert-python
+  - ipython
+  - matplotlib
+  - seaborn
+  - openpyxl
+  - pyproj
+  - shapely
+  - rtree

@@ -7,7 +7,7 @@ import pandas as pd
 import numpy as np
 from statsmodels.stats.weightstats import DescrStatsW as dsw
 import statsmodels.formula.api as smf
-os.chdir('C:\\Users\\wyatt\\student30538-w26\\final-project-whartwig')
+
 base_dir = Path(__file__).resolve().parent.parent
 path_raw_data = os.path.join(base_dir, 'data', 'raw-data')
 path_cleaned_data = os.path.join(base_dir, 'data', 'derived-data')
