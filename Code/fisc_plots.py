@@ -332,9 +332,8 @@ coef_plot = (zero_line + error_bars + points + footer).properties(
 
 # --- 4. DISPLAY PLOTS ---
 
-revenue_chart.display()
-spending_chart.display()
-general_comp.display()
-coef_plot.display()
-
+display_to_pdf(revenue_chart)
+display_to_pdf(spending_chart)
+display_to_pdf(general_comp)
+display_to_pdf(coef_plot)
 

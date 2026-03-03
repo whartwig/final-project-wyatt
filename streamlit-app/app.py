@@ -30,7 +30,7 @@ def load_geojson(path_dir, filename):
             gdf[col] = gdf[col].astype(str)
             
     return gdf
-print("✅ Imports successful! Starting data load...")
+
 # Load datasets
 all_tracts = load_geojson(path_cleaned_data, 'all_tracts.geojson')
 newstl_dis = load_geojson(path_cleaned_data, 'newstl_dis.geojson')
@@ -52,15 +52,15 @@ else:
 
 # --- 2. SIDEBAR NAVIGATION ---
 st.sidebar.title("Navigation")
-page = st.sidebar.radio("Select View", ["Regional Density Analysis", "Municipal Comparison", "Critical Infrastructure"])
+page = st.sidebar.radio("Select View", ["Regional Demographic Analysis", "Municipal Comparison", "Critical Infrastructure"])
 
 # --- 3. PAGE: REGIONAL DENSITY ANALYSIS ---
-if page == "Regional Density Analysis":
+if page == "Regional Demographic Analysis":
     # --- HEADER ---
-    st.title("St. Louis Region: Reimagining Municipal Boundaries")
+    st.title("St. Louis Region: Reimagining Boundaries")
     st.markdown("""
     This dashboard explores the impact of redefining St. Louis city boundaries based on census tract density 
-    and merging the city with St. Louis County. 
+    and merging the city with St. Louis County. \n
     Use the sidebar to toggle between different geographic layers and demographic views.
     """)
 
@@ -152,7 +152,7 @@ if page == "Regional Density Analysis":
 
     # --- SUMMARY STATISTICS ---
     st.subheader("Regional Summary Statistics")
-    col1, col2, col3 = st.columns(3)
+    col1, col2, col3, col4, col5= st.columns(5)
 
     if all_tracts is not None:
         with col1:
@@ -160,14 +160,22 @@ if page == "Regional Density Analysis":
             st.metric("Current City Population", f"{old_city_pop:,.0f}")
 
         with col2:
-            new_city_pop = newstl_tracts['Total Population'].sum() if newstl_tracts is not None else 0
-            st.metric("Proposed 'New St. Louis' Population", f"{new_city_pop:,.0f}")
+            old_density = all_tracts[all_tracts['COUNTY'] == 'St. Louis city']['Total Population'].sum()/all_tracts[all_tracts['COUNTY'] == 'St. Louis city']['SQMI'].sum()
+            st.metric("Current City Density", f"{old_density:,.0f}")
 
         with col3:
+            new_city_pop = newstl_tracts['Total Population'].sum() if newstl_tracts is not None else 0
+            st.metric("'New St. Louis' Population", f"{new_city_pop:,.0f}")
+
+        with col4:
+            new_city_density = newstl_tracts['Total Population'].sum()/newstl_tracts['SQMI'].sum() if newstl_tracts is not None else 0
+            st.metric("'New St. Louis' Density", f"{new_city_density:,.0f}")
+
+        with col5:
             county_pop = county_plus_newstl['Total Population'].sum() if county_plus_newstl is not None else 0
             st.metric("Total Regional Population", f"{county_pop:,.0f}")
 
-    st.info("The 'New St. Louis' boundary is defined by census tracts with a density ≥ 3,600 people/sq mi, adjusted for contiguity.")
+    st.info("The 'New St. Louis' boundary is defined by census tracts with a density ≥ 3,600 people/sq mi, adjusted for contiguity and compactness.")
 
 # --- 4. PAGE: MUNICIPAL COMPARISON ---
 elif page == "Municipal Comparison":
@@ -360,4 +368,5 @@ elif page == "Critical Infrastructure":
                     fol.CircleMarker(location=[row.geometry.y, row.geometry.x], radius=2, color='#28a745', fill=True).add_to(m_infra)
 
     st_folium(m_infra, width=1000, height=700)
+
     st.info("Transit and emergency service assets are shown relative to the proposed 'New St. Louis' boundary.")
