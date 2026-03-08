@@ -6,7 +6,7 @@ This project processes and outputs data used to create municipal financial analy
 
 
 ## Setup
-It is highly recommended to use the provided `environment.yml` to ensure all spatial and dashboard dependencies are met:
+It is highly recommended to use the provided `requierments.yml` to ensure all spatial and dashboard dependencies are met:
 ```bash
 conda env create -f environment.yml
 conda activate stl_analysis
