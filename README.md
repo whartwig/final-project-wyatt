@@ -52,7 +52,7 @@ conda activate stl_analysis
 
 ## Usage
 1. **Data Preprocessing:**
-   Generate the processed datasets (Note: Requires a Census API key in `code/preprocessing.py` obtain a key from [the Census Bureau](https://api.census.gov/data/key_signup.html)).
+   Generate the processed datasets Note: Requires a Census API key in `code/preprocessing.py` obtain a key from [the Census Bureau](https://api.census.gov/data/key_signup.html). If you choose not to use your API key, all data required for plotting is also uploaded with this project.
    ```bash
    python code/preprocessing.py
    ```
