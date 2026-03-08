@@ -72,6 +72,15 @@ if page == "Regional Demographic Analysis":
     show_newstl_border = st.sidebar.checkbox("Show Proposed 'New St. Louis' Boundary", value=True)
     show_cur_city_border = st.sidebar.checkbox("Show Current St. Louis City Boundary", value=True)
 
+    # Dynamic Legend
+    st.sidebar.markdown("---")
+    st.sidebar.subheader("Map Legend")
+    if show_newstl_border:
+        st.sidebar.markdown('<div style="display: flex; align-items: center; margin-bottom: 5px;"><div style="width: 20px; height: 0px; border-top: 3px dashed #ff4b4b; margin-right: 10px;"></div><span>Proposed New St. Louis</span></div>', unsafe_allow_html=True)
+    if show_cur_city_border:
+        st.sidebar.markdown('<div style="display: flex; align-items: center; margin-bottom: 5px;"><div style="width: 20px; height: 0px; border-top: 3px solid #2c3e50; margin-right: 10px;"></div><span>Current City Boundary</span></div>', unsafe_allow_html=True)
+    st.sidebar.markdown("---")
+
     # Demographic Selector for Choropleth
     demo_col = st.sidebar.selectbox(
         "Select Demographic Variable for Tract View",
@@ -184,6 +193,21 @@ elif page == "Municipal Comparison":
     Explore fiscal and demographic data across individual municipalities in St. Louis County and the City. 
     Use the dropdown to change the variable displayed on the map.
     """)
+    
+    st.sidebar.header('Map Controls')
+
+    # Border checkboxes
+    show_newstl_border = st.sidebar.checkbox("Show Proposed 'New St. Louis' Boundary", value=True)
+    show_cur_city_border = st.sidebar.checkbox("Show Current St. Louis City Boundary", value=True)
+
+    # Creation of legend for above  borders
+    st.sidebar.markdown("---")
+    st.sidebar.subheader("Map Legend")
+    if show_newstl_border:
+        st.sidebar.markdown('<div style="display: flex; align-items: center; margin-bottom: 5px;"><div style="width: 20px; height: 0px; border-top: 3px dashed #ff4b4b; margin-right: 10px;"></div><span>Proposed New St. Louis</span></div>', unsafe_allow_html=True)
+    if show_cur_city_border:
+        st.sidebar.markdown('<div style="display: flex; align-items: center; margin-bottom: 5px;"><div style="width: 20px; height: 0px; border-top: 3px solid #2c3e50; margin-right: 10px;"></div><span>Current City Boundary</span></div>', unsafe_allow_html=True)
+    st.sidebar.markdown("---")
 
     if munis_merged is not None:
         # Variable Selector
@@ -246,6 +270,31 @@ elif page == "Municipal Comparison":
             )
         ).add_to(m_muni)
 
+        # Present new city borders
+        if show_newstl_border is not None:
+            fol.GeoJson(
+                newstl_dis,
+                name="Proposed New St. Louis",
+                style_function=lambda x: {
+                    'fillColor': 'none',
+                    'color': '#ff4b4b',
+                    'weight': 4,
+                    'dashArray': '5, 5'
+                }
+            ).add_to(m_muni)
+
+        # Present current city borders
+        if show_cur_city_border is not None:
+            fol.GeoJson(
+                cur_city_dis,
+                name="Current City",
+                style_function=lambda x: {
+                    'fillColor': 'none',
+                    'color': '#2c3e50',
+                    'weight': 3
+                }
+            ).add_to(m_muni)
+
         st_folium(m_muni, width=1000, height=600)
         
         st.subheader("Municipal Data Table")
@@ -277,8 +326,34 @@ elif page == "Critical Infrastructure":
     show_bus_stations = st.sidebar.checkbox("Bus Stations", value=False)
     show_bus_routes = st.sidebar.checkbox("Bus Routes", value=False)
 
+    # Dynamic Legend
+    st.sidebar.markdown("---")
+    st.sidebar.subheader("Map Legend")
+    
+    # Boundaries
+    st.sidebar.markdown('<div style="display: flex; align-items: center; margin-bottom: 5px;"><div style="width: 20px; height: 0px; border-top: 3px dashed #ff4b4b; margin-right: 10px;"></div><span>Proposed New STL</span></div>', unsafe_allow_html=True)
+    st.sidebar.markdown('<div style="display: flex; align-items: center; margin-bottom: 5px;"><div style="width: 20px; height: 0px; border-top: 2px solid #2c3e50; margin-right: 10px;"></div><span>Current City Boundary</span></div>', unsafe_allow_html=True)
+    
+    # Infrastructure items (only if shown)
+    if show_econ:
+        st.sidebar.markdown('<div style="display: flex; align-items: center; margin-bottom: 5px;"><div style="width: 12px; height: 12px; background-color: orange; border-radius: 2px; margin-right: 10px;"></div><span>Economic Assets</span></div>', unsafe_allow_html=True)
+    if show_police:
+        st.sidebar.markdown('<div style="display: flex; align-items: center; margin-bottom: 5px;"><div style="width: 12px; height: 12px; border: 1px solid blue; background-color: rgba(0, 0, 255, 0.1); margin-right: 10px;"></div><span>Police Precincts</span></div>', unsafe_allow_html=True)
+    if show_fire_stat:
+        st.sidebar.markdown('<div style="display: flex; align-items: center; margin-bottom: 5px;"><div style="width: 12px; height: 12px; background-color: red; border-radius: 50%; margin-right: 10px;"></div><span>STL Fire Stations</span></div>', unsafe_allow_html=True)
+    if show_fire_dist:
+        st.sidebar.markdown('<div style="display: flex; align-items: center; margin-bottom: 5px;"><div style="width: 12px; height: 12px; border: 1px solid black; background-color: rgba(255, 0, 0, 0.1); margin-right: 10px;"></div><span>County Fire Districts</span></div>', unsafe_allow_html=True)
+    if show_metro_routes:
+        st.sidebar.markdown('<div style="display: flex; align-items: center; margin-bottom: 5px;"><div style="width: 20px; height: 0px; border-top: 4px solid #007bff; margin-right: 10px;"></div><span>Metro Routes</span></div>', unsafe_allow_html=True)
+    if show_metro_stations:
+        st.sidebar.markdown('<div style="display: flex; align-items: center; margin-bottom: 5px;"><div style="width: 10px; height: 10px; border-radius: 50%; background-color: #007bff; border: 1px solid white; margin-right: 10px;"></div><span>Metro Stations</span></div>', unsafe_allow_html=True)
+    if show_bus_routes:
+        st.sidebar.markdown('<div style="display: flex; align-items: center; margin-bottom: 5px;"><div style="width: 20px; height: 0px; border-top: 2px solid #28a745; margin-right: 10px;"></div><span>Bus Routes</span></div>', unsafe_allow_html=True)
+    if show_bus_stations:
+        st.sidebar.markdown('<div style="display: flex; align-items: center; margin-bottom: 5px;"><div style="width: 8px; height: 8px; border-radius: 50%; background-color: #28a745; margin-right: 10px;"></div><span>Bus Stations</span></div>', unsafe_allow_html=True)
+
     # Base Map
-    m_infra = fol.Map(location=[38.64293421087117, -90.32506114168913], zoom_start=11, tiles='cartodb positron')
+    m_infra = fol.Map(location=[38.64293421087117, -90.32506114168913], zoom_start=10, tiles='cartodb positron')
 
     # Add Boundaries for Context
     if cur_city_dis is not None:

@@ -2,15 +2,7 @@
 title: "Regional Synergies and Costs: What Would a Reconnected St. Louis City-County Look Like?"
 author: "Wyatt Hartwig, Lecture Section: Monday 10:30-11:50, GitHub: whartwig"
 format:
-  html:
-    include-in-header:
-      text: |
-        % Enable wrapping for Pandoc code blocks in PDF
-        \usepackage{fvextra}
-        \usepackage{float}
-        \usepackage{makecell}
-        \usepackage{booktabs}
-        \DefineVerbatimEnvironment{Highlighting}{Verbatim}{breaklines,commandchars=\\\{\}}
+  html
 editor: source
 execute-dir: project
 ---
@@ -735,9 +727,15 @@ coef_plot = alt.vconcat(main_plot).properties(
 #| echo: false
 # Streamlit code for reference
 
+# --- 0. PACKAGES ---
 import streamlit as st
+import pandas as pd
+import numpy as np
+import geopandas as gpd
 import folium as fol
 from streamlit_folium import st_folium
+import os
+from pathlib import Path
 
 
 # --- 1. SETUP ---
@@ -802,6 +800,15 @@ if page == "Regional Demographic Analysis":
     show_all_tracts = st.sidebar.checkbox("Show All Census Tracts", value=True)
     show_newstl_border = st.sidebar.checkbox("Show Proposed 'New St. Louis' Boundary", value=True)
     show_cur_city_border = st.sidebar.checkbox("Show Current St. Louis City Boundary", value=True)
+
+    # Dynamic Legend
+    st.sidebar.markdown("---")
+    st.sidebar.subheader("Map Legend")
+    if show_newstl_border:
+        st.sidebar.markdown('<div style="display: flex; align-items: center; margin-bottom: 5px;"><div style="width: 20px; height: 0px; border-top: 3px dashed #ff4b4b; margin-right: 10px;"></div><span>Proposed New St. Louis</span></div>', unsafe_allow_html=True)
+    if show_cur_city_border:
+        st.sidebar.markdown('<div style="display: flex; align-items: center; margin-bottom: 5px;"><div style="width: 20px; height: 0px; border-top: 3px solid #2c3e50; margin-right: 10px;"></div><span>Current City Boundary</span></div>', unsafe_allow_html=True)
+    st.sidebar.markdown("---")
 
     # Demographic Selector for Choropleth
     demo_col = st.sidebar.selectbox(
@@ -915,6 +922,21 @@ elif page == "Municipal Comparison":
     Explore fiscal and demographic data across individual municipalities in St. Louis County and the City. 
     Use the dropdown to change the variable displayed on the map.
     """)
+    
+    st.sidebar.header('Map Controls')
+
+    # Border checkboxes
+    show_newstl_border = st.sidebar.checkbox("Show Proposed 'New St. Louis' Boundary", value=True)
+    show_cur_city_border = st.sidebar.checkbox("Show Current St. Louis City Boundary", value=True)
+
+    # Creation of legend for above  borders
+    st.sidebar.markdown("---")
+    st.sidebar.subheader("Map Legend")
+    if show_newstl_border:
+        st.sidebar.markdown('<div style="display: flex; align-items: center; margin-bottom: 5px;"><div style="width: 20px; height: 0px; border-top: 3px dashed #ff4b4b; margin-right: 10px;"></div><span>Proposed New St. Louis</span></div>', unsafe_allow_html=True)
+    if show_cur_city_border:
+        st.sidebar.markdown('<div style="display: flex; align-items: center; margin-bottom: 5px;"><div style="width: 20px; height: 0px; border-top: 3px solid #2c3e50; margin-right: 10px;"></div><span>Current City Boundary</span></div>', unsafe_allow_html=True)
+    st.sidebar.markdown("---")
 
     if munis_merged is not None:
         # Variable Selector
@@ -977,6 +999,31 @@ elif page == "Municipal Comparison":
             )
         ).add_to(m_muni)
 
+        # Present new city borders
+        if show_newstl_border is not None:
+            fol.GeoJson(
+                newstl_dis,
+                name="Proposed New St. Louis",
+                style_function=lambda x: {
+                    'fillColor': 'none',
+                    'color': '#ff4b4b',
+                    'weight': 4,
+                    'dashArray': '5, 5'
+                }
+            ).add_to(m_muni)
+
+        # Present current city borders
+        if show_cur_city_border is not None:
+            fol.GeoJson(
+                cur_city_dis,
+                name="Current City",
+                style_function=lambda x: {
+                    'fillColor': 'none',
+                    'color': '#2c3e50',
+                    'weight': 3
+                }
+            ).add_to(m_muni)
+
         st_folium(m_muni, width=1000, height=600)
         
         st.subheader("Municipal Data Table")
@@ -1008,8 +1055,34 @@ elif page == "Critical Infrastructure":
     show_bus_stations = st.sidebar.checkbox("Bus Stations", value=False)
     show_bus_routes = st.sidebar.checkbox("Bus Routes", value=False)
 
+    # Dynamic Legend
+    st.sidebar.markdown("---")
+    st.sidebar.subheader("Map Legend")
+    
+    # Boundaries
+    st.sidebar.markdown('<div style="display: flex; align-items: center; margin-bottom: 5px;"><div style="width: 20px; height: 0px; border-top: 3px dashed #ff4b4b; margin-right: 10px;"></div><span>Proposed New STL</span></div>', unsafe_allow_html=True)
+    st.sidebar.markdown('<div style="display: flex; align-items: center; margin-bottom: 5px;"><div style="width: 20px; height: 0px; border-top: 2px solid #2c3e50; margin-right: 10px;"></div><span>Current City Boundary</span></div>', unsafe_allow_html=True)
+    
+    # Infrastructure items (only if shown)
+    if show_econ:
+        st.sidebar.markdown('<div style="display: flex; align-items: center; margin-bottom: 5px;"><div style="width: 12px; height: 12px; background-color: orange; border-radius: 2px; margin-right: 10px;"></div><span>Economic Assets</span></div>', unsafe_allow_html=True)
+    if show_police:
+        st.sidebar.markdown('<div style="display: flex; align-items: center; margin-bottom: 5px;"><div style="width: 12px; height: 12px; border: 1px solid blue; background-color: rgba(0, 0, 255, 0.1); margin-right: 10px;"></div><span>Police Precincts</span></div>', unsafe_allow_html=True)
+    if show_fire_stat:
+        st.sidebar.markdown('<div style="display: flex; align-items: center; margin-bottom: 5px;"><div style="width: 12px; height: 12px; background-color: red; border-radius: 50%; margin-right: 10px;"></div><span>STL Fire Stations</span></div>', unsafe_allow_html=True)
+    if show_fire_dist:
+        st.sidebar.markdown('<div style="display: flex; align-items: center; margin-bottom: 5px;"><div style="width: 12px; height: 12px; border: 1px solid black; background-color: rgba(255, 0, 0, 0.1); margin-right: 10px;"></div><span>County Fire Districts</span></div>', unsafe_allow_html=True)
+    if show_metro_routes:
+        st.sidebar.markdown('<div style="display: flex; align-items: center; margin-bottom: 5px;"><div style="width: 20px; height: 0px; border-top: 4px solid #007bff; margin-right: 10px;"></div><span>Metro Routes</span></div>', unsafe_allow_html=True)
+    if show_metro_stations:
+        st.sidebar.markdown('<div style="display: flex; align-items: center; margin-bottom: 5px;"><div style="width: 10px; height: 10px; border-radius: 50%; background-color: #007bff; border: 1px solid white; margin-right: 10px;"></div><span>Metro Stations</span></div>', unsafe_allow_html=True)
+    if show_bus_routes:
+        st.sidebar.markdown('<div style="display: flex; align-items: center; margin-bottom: 5px;"><div style="width: 20px; height: 0px; border-top: 2px solid #28a745; margin-right: 10px;"></div><span>Bus Routes</span></div>', unsafe_allow_html=True)
+    if show_bus_stations:
+        st.sidebar.markdown('<div style="display: flex; align-items: center; margin-bottom: 5px;"><div style="width: 8px; height: 8px; border-radius: 50%; background-color: #28a745; margin-right: 10px;"></div><span>Bus Stations</span></div>', unsafe_allow_html=True)
+
     # Base Map
-    m_infra = fol.Map(location=[38.64293421087117, -90.32506114168913], zoom_start=11, tiles='cartodb positron')
+    m_infra = fol.Map(location=[38.64293421087117, -90.32506114168913], zoom_start=10, tiles='cartodb positron')
 
     # Add Boundaries for Context
     if cur_city_dis is not None:
@@ -1123,7 +1196,7 @@ Our static plot generation relies on a custom theme developed to ensure visual c
 We encountered significant technical hurdles, primarily in data acquisition and integration. Initially, extracting aggregated data directly from the Census Bureau's website proved unwieldy until we transitioned to their Python API, which vastly streamlined our workflow. Furthermore, merging numerous disparate datasets required extensive manual tuning and column mapping. A notable weakness is while we successfully mapped the transit network layout, time constraints prevented us from incorporating actual route usage or high-traffic corridor data. This usage data would be essential for a more robust evaluation of regional transit alignment against the proposed borders.
 
 ## Streamlit Findings
-Our interactive Streamlit application features a three-page dashboard with a sidebar selector, centering on regional maps of census tracts, municipalities, and government districts. Each view contrasts St. Louis's current boundaries with our proposed boundries. Our analysis reveals that expanding the city based on census tract density improves population alignment, which theoretically broadens the tax base and lowers per-capita service costs. Furthermore, our data shows that municipal governing costs in inner-ring suburbs exceed those of the principal city, bolstering the financial argument for consolidation. Visually, our proposed density-based borders align closely with existing county fire districts and capture major economic assets. These findings suggest that a city-county merger could significantly reduce administrative overhead and better unify the region's economic assets.
+Our interactive Streamlit application features a three-page dashboard with a sidebar selector, centering on regional maps of census tracts, municipalities, and government districts. Each view contrasts St. Louis's current boundaries with our proposed boundries. Our analysis reveals that expanding the city based on census tract density improves population alignment (absecent the mannual tunning discussed above), which theoretically broadens the tax base and lowers per-capita service costs. Furthermore, our data shows that municipal governing costs in inner-ring suburbs exceed those of the principal city, bolstering the financial argument for consolidation. Visually, our proposed density-based borders align closely with existing county fire districts and capture major economic assets. These findings suggest that a city-county merger could significantly reduce administrative overhead and better unify the region's economic assets.
 
 ## Static Plot Findings
 While our Streamlit app showed clear benefits to consolidation, our Fiscally Standardized City (FiSC) data analysis presents a more complex picture. FiSC data better estimates true per-capita burdens by accounting for overlapping taxing authorities, offering a necessary supplement to our municipal-level data. To streamline this analysis, we compare St. Louis to University City (an inner-ring suburb) and Louisville (a consolidated peer city frequently cited by merger proponents).
