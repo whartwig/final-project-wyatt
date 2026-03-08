@@ -1,6 +1,8 @@
 # final-project-whartwig
 This project processes and outputs data used to create municipal financial analysis and interactive maps via Streamlit Community Cloud with a focus on the potential reabsorption of St. Louis into St. Louis County.
 
+[GitHub Link](https://github.com/whartwig/final-project-wyatt)
+
 [[Streamlit Community Cloud Link](https://final-project-wyatt-angqqwcv8dvhrurxs3ls7x.streamlit.app/)]
 
 
